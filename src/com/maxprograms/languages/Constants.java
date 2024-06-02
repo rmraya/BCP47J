@@ -13,6 +13,6 @@ package com.maxprograms.languages;
 
 public class Constants {
 
-    public static final String VERSION = "1.0.1";
-    public static final String BUILD = "20240320_1338";
+    public static final String VERSION = "1.0.2";
+    public static final String BUILD = "20240602_0931";
 }
