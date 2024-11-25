@@ -13,6 +13,10 @@ package com.maxprograms.languages;
 
 public class Constants {
 
-    public static final String VERSION = "1.0.2";
-    public static final String BUILD = "20240602_0931";
+    private Constants() {
+        // do not instantiate
+    }
+    
+    public static final String VERSION = "1.0.3";
+    public static final String BUILD = "20241125_0627";
 }

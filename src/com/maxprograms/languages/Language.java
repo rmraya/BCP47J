@@ -26,14 +26,14 @@ public class Language implements Comparable<Language>, Serializable {
 
 	private String code;
 	private String description;
-	private String script;
+	private String suppresedScript;
 
 	private static Collator collator;
 
 	public Language(String code, String description) {
 		this.code = code;
 		this.description = description;
-		script = "";
+		suppresedScript = "";
 	}
 
 	public String getCode() {
@@ -72,11 +72,11 @@ public class Language implements Comparable<Language>, Serializable {
 	}
 
 	public void setSuppressedScript(String value) {
-		script = value;
+		suppresedScript = value;
 	}
 
 	public String getSuppresedScript() {
-		return script;
+		return suppresedScript;
 	}
 
 	public boolean isBiDi() throws SAXException, IOException, ParserConfigurationException {
