@@ -17,6 +17,6 @@ public class Constants {
         // do not instantiate
     }
     
-    public static final String VERSION = "1.0.5";
-    public static final String BUILD = "20250528_0856";
+    public static final String VERSION = "1.0.6";
+    public static final String BUILD = "20250625_0748";
 }
