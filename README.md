@@ -21,9 +21,9 @@ Use the static methods provided by class `com.maxprograms.languages.LanguageUtil
 
 ### Localization
 
-This library includes lists of languages with their names in English and Spanish.
+This library includes lists of languages with their names in English, Spanish and French.
 
-Set `Locale` to `en` (default) or `es` to get the names in English or Spanish respectively.
+Set `Locale` to `en` (default), `es` or `fr` to get the names in English, Spanish or French respectively.
 
 ```java
 
