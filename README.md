@@ -32,7 +32,7 @@ String[] names = LanguageUtils.getLanguageNames();
 
 ```
 
-Contatct <tech@maxprograms.com> to localize the names to other languages.
+Contact <tech@maxprograms.com> to localize the names to other languages.
 
 ### Example
 
