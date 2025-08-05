@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src']
+            exclude '**/*.java'
+        }
+    }
+}
+
+dependencies {
+    implementation files('lib/xmljava.jar')
+}
+
+// Disable all caching for fresh builds
+gradle.startParameter.buildCacheEnabled = false
+tasks.configureEach {
+    outputs.upToDateWhen { false }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    // Disable incremental compilation for fresh builds
+    options.incremental = false
+}
+
+jar {
+    archiveBaseName = 'bcp47j'
+    destinationDirectory = file('lib')
+}
+
+// Clean task to remove build outputs
+tasks.named('clean') {
+    doFirst {
+        delete 'lib/bcp47j.jar'
+    }
+}
+
+// Default task
+defaultTasks 'build'

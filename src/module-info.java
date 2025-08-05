@@ -9,7 +9,7 @@
  * Contributors:
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
-module javabcp47 {
+module bcp47j {
 
     exports com.maxprograms.languages;
 
