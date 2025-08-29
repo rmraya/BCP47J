@@ -13,6 +13,7 @@
   <lang code="ar-BH">Arabic (Bahrain)</lang>
   <lang code="ar-DZ">Arabic (Algeria)</lang>
   <lang code="ar-EG">Arabic (Egypt)</lang>
+  <lang code="ar-IL">Arabic (Israel)</lang>
   <lang code="ar-IQ">Arabic (Iraq)</lang>
   <lang code="ar-JO">Arabic (Jordan)</lang>
   <lang code="ar-KW">Arabic (Kuwait)</lang>
@@ -20,6 +21,7 @@
   <lang code="ar-LY">Arabic (Libya)</lang>
   <lang code="ar-MA">Arabic (Morocco)</lang>
   <lang code="ar-OM">Arabic (Oman)</lang>
+  <lang code="ar-PS">Arabic (State of Palestine)</lang>
   <lang code="ar-QA">Arabic (Qatar)</lang>
   <lang code="ar-SA">Arabic (Saudi Arabia)</lang>
   <lang code="ar-SY">Arabic (Syrian Arab Republic)</lang>
@@ -29,6 +31,7 @@
   <lang code="av">Avaric</lang>
   <lang code="ay">Aymara</lang>
   <lang code="az">Azerbaijani</lang>
+  <lang code="az-AZ">Azerbaijani (Azerbaijan)</lang>
   <lang code="ba">Bashkir</lang>
   <lang code="be">Belarusian</lang>
   <lang code="bg">Bulgarian</lang>
@@ -45,6 +48,8 @@
   <lang code="ca">Catalan</lang>
   <lang code="ce">Chechen</lang>
   <lang code="ch">Chamorro</lang>
+  <lang code="cnr">Montenegrin</lang>
+  <lang code="cnr-ME">Montenegrin (Montenegro)</lang>
   <lang code="co">Corsican</lang>
   <lang code="cr">Cree</lang>
   <lang code="cs">Czech</lang>
@@ -52,6 +57,7 @@
   <lang code="cu">Church Slavic</lang>
   <lang code="cv">Chuvash</lang>
   <lang code="cy">Welsh</lang>
+  <lang code="cy-GB">Welsh (United Kingdom)</lang>
   <lang code="da">Danish</lang>
   <lang code="da-DK">Danish (Denmark)</lang>
   <lang code="de">German</lang>
@@ -64,16 +70,25 @@
   <lang code="dz">Dzongkha</lang>
   <lang code="ee">Ewe</lang>
   <lang code="el">Greek</lang>
+  <lang code="el-CY">Greek (Cyprus)</lang>
   <lang code="el-GR">Greek (Greece)</lang>
   <lang code="en">English</lang>
   <lang code="en-029">English (Caribbean)</lang>
+  <lang code="en-AE">English (United Arab Emirates)</lang>
   <lang code="en-AU">English (Australia)</lang>
+  <lang code="en-BH">English (Bahrain)</lang>
   <lang code="en-BZ">English (Belize)</lang>
   <lang code="en-CA">English (Canada)</lang>
   <lang code="en-GB">English (United Kingdom)</lang>
+  <lang code="en-HK">English (Hong Kong)</lang>
   <lang code="en-IE">English (Ireland)</lang>
   <lang code="en-JM">English (Jamaica)</lang>
+  <lang code="en-KW">English (Kuwait)</lang>
+  <lang code="en-MY">English (Malaysia)</lang>
   <lang code="en-NZ">English (New Zealand)</lang>
+  <lang code="en-PS">English (State of Palestine)</lang>
+  <lang code="en-QA">English (Qatar)</lang>
+  <lang code="en-SA">English (Saudi Arabia)</lang>
   <lang code="en-TT">English (Trinidad and Tobago)</lang>
   <lang code="en-US">English (United States)</lang>
   <lang code="en-ZA">English (South Africa)</lang>
@@ -104,6 +119,7 @@
   <lang code="et-EE">Estonian (Estonia)</lang>
   <lang code="eu">Basque</lang>
   <lang code="fa">Persian</lang>
+  <lang code="fa-IR">Persian (Islamic Republic of Iran)</lang>
   <lang code="ff">Fulah</lang>
   <lang code="fi">Finnish</lang>
   <lang code="fi-FI">Finnish (Finland)</lang>
@@ -114,8 +130,10 @@
   <lang code="fr-BE">French (Belgium)</lang>
   <lang code="fr-CA">French (Canada)</lang>
   <lang code="fr-CH">French (Switzerland)</lang>
+  <lang code="fr-CI">French (Côte d'Ivoire)</lang>
   <lang code="fr-FR">French (France)</lang>
   <lang code="fr-LU">French (Luxembourg)</lang>
+  <lang code="fr-MA">French (Morocco)</lang>
   <lang code="fy">Western Frisian</lang>
   <lang code="ga">Irish</lang>
   <lang code="gd">Scottish Gaelic</lang>
@@ -134,6 +152,7 @@
   <lang code="hu">Hungarian</lang>
   <lang code="hu-HU">Hungarian (Hungary)</lang>
   <lang code="hy">Armenian</lang>
+  <lang code="hy-AM">Armenian (Armenia)</lang>
   <lang code="hz">Herero</lang>
   <lang code="ia">Interlingua</lang>
   <lang code="id">Indonesian</lang>
@@ -154,11 +173,14 @@
   <lang code="ja-JP">Japanese (Japan)</lang>
   <lang code="jv">Javanese</lang>
   <lang code="ka">Georgian</lang>
+  <lang code="kaa">Kara-Kalpak</lang>
+  <lang code="kaa-UZ">Kara-Kalpak (Uzbekistan)</lang>
   <lang code="ka-GE">Georgian (Georgia)</lang>
   <lang code="kg">Kongo</lang>
   <lang code="ki">Kikuyu</lang>
   <lang code="kj">Kuanyama</lang>
   <lang code="kk">Kazakh</lang>
+  <lang code="kk-KZ">Kazakh (Kazakhstan)</lang>
   <lang code="kl">Kalaallisut</lang>
   <lang code="km">Khmer</lang>
   <lang code="kn">Kannada</lang>
@@ -228,7 +250,10 @@
   <lang code="ro">Romanian</lang>
   <lang code="ro-RO">Romanian (Romania)</lang>
   <lang code="ru">Russian</lang>
+  <lang code="ru-AZ">Russian (Azerbaijan)</lang>
+  <lang code="ru-KZ">Russian (Kazakhstan)</lang>
   <lang code="ru-RU">Russian (Russian Federation)</lang>
+  <lang code="ru-UZ">Russian (Uzbekistan)</lang>
   <lang code="rw">Kinyarwanda</lang>
   <lang code="sa">Sanskrit</lang>
   <lang code="sc">Sardinian</lang>
@@ -244,6 +269,8 @@
   <lang code="sn">Shona</lang>
   <lang code="so">Somali</lang>
   <lang code="sq">Albanian</lang>
+  <lang code="sq-AL">Albanian (Albania)</lang>
+  <lang code="sq-MK">Albanian (North Macedonia)</lang>
   <lang code="sr">Serbian</lang>
   <lang code="sr-Cyrl">Serbian (Cyrillic)</lang>
   <lang code="sr-Cyrl-RS">Serbian (Cyrillic, Serbia)</lang>
@@ -258,6 +285,7 @@
   <lang code="sv-SE">Swedish (Sweden)</lang>
   <lang code="sw">Swahili</lang>
   <lang code="ta">Tamil</lang>
+  <lang code="ta-MY">Tamil (Malaysia)</lang>
   <lang code="te">Telugu</lang>
   <lang code="tg">Tajik</lang>
   <lang code="th">Thai</lang>
@@ -278,6 +306,7 @@
   <lang code="uk-UA">Ukrainian (Ukraine)</lang>
   <lang code="ur">Urdu</lang>
   <lang code="uz">Uzbek</lang>
+  <lang code="uz-UZ">Uzbek (Uzbekistan)</lang>
   <lang code="ve">Venda</lang>
   <lang code="vi">Vietnamese</lang>
   <lang code="vi-VN">Vietnamese (Viet Nam)</lang>
@@ -290,7 +319,6 @@
   <lang code="za">Zhuang</lang>
   <lang code="zh">Chinese</lang>
   <lang code="zh-CN">Chinese (China)</lang>
-  <lang code="zh-HK">Chinese (Hong Kong)</lang>
   <lang code="zh-Hans">Chinese (Han [Simplified variant])</lang>
   <lang code="zh-Hans-CN">Chinese (Han [Simplified variant], China)</lang>
   <lang code="zh-Hans-HK">Chinese (Han [Simplified variant], Hong Kong)</lang>
@@ -300,7 +328,11 @@
   <lang code="zh-Hant-HK">Chinese (Han [Traditional variant], Hong Kong)</lang>
   <lang code="zh-Hant-MO">Chinese (Han [Traditional variant], Macao)</lang>
   <lang code="zh-Hant-TW">Chinese (Han [Traditional variant], Taiwan, Province of China)</lang>
+  <lang code="zh-HK">Chinese (Hong Kong)</lang>
+  <lang code="zh-MO">Chinese (Macao)</lang>
+  <lang code="zh-MY">Chinese (Malaysia)</lang>
   <lang code="zh-SG">Chinese (Singapore)</lang>
   <lang code="zh-TW">Chinese (Taiwan, Province of China)</lang>
   <lang code="zu">Zulu</lang>
+  <lang code="zu-ZA">Zulu (South Africa)</lang>
 </languages>

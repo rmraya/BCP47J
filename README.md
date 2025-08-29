@@ -32,6 +32,8 @@ String[] names = LanguageUtils.getLanguageNames();
 
 ```
 
+* Note: localizations are based on [cldr-json](https://github.com/unicode-org/cldr-json) project.
+
 Contact <tech@maxprograms.com> to localize the names to other languages.
 
 ### Example
@@ -52,9 +54,9 @@ boolean isValidLanguage(String code) {
 
 You need Java 21 and [Gradle](https://gradle.org/)
 
-- Point your JAVA_HOME variable to JDK 21
-- Checkout this repository
-- Run `gradle` to compile the source code
+* Point your `JAVA_HOME` variable to JDK 21
+* Checkout this repository
+* Run `gradle` to compile the source code
 
 ``` text
 git clone https://github.com/rmraya/BCP47J.git
