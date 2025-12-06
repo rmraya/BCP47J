@@ -12,11 +12,14 @@
 package com.maxprograms.languages;
 
 import java.io.IOException;
+import java.net.URL;
 import java.text.Collator;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -30,9 +33,8 @@ import com.maxprograms.xml.SAXBuilder;
 
 public class LanguageUtils {
 
-	private static List<Language> languages;
-	private static List<Language> extendedLanguages;
-	private static Set<String> bidiCodes;
+	private static final Map<String, LanguageBundle> EXTENDED_LANGUAGE_CACHE = new HashMap<>();
+	private static final Map<String, List<Language>> COMMON_LANGUAGE_CACHE = new HashMap<>();
 	private static RegistryParser registry;
 
 	private LanguageUtils() {
@@ -40,63 +42,34 @@ public class LanguageUtils {
 	}
 
 	public static List<Language> getAllLanguages() throws SAXException, IOException, ParserConfigurationException {
-		if (extendedLanguages == null) {
-			extendedLanguages = new Vector<>();
-			bidiCodes = new TreeSet<>();
-			SAXBuilder builder = new SAXBuilder();
-			Locale locale = Locale.getDefault();
-			String language = locale.getLanguage();
-			String resource = "extendedLanguageList_" + language + ".xml";
-			if (LanguageUtils.class.getResourceAsStream(resource) == null) {
-				resource = "extendedLanguageList_" + language.substring(0, 2) + ".xml";
-			}
-			if (LanguageUtils.class.getResourceAsStream(resource) == null) {
-				resource = "extendedLanguageList.xml";
-			}
-			Element root = builder.build(LanguageUtils.class.getResource(resource)).getRootElement();
-			List<Element> children = root.getChildren();
-			Iterator<Element> it = children.iterator();
-			while (it.hasNext()) {
-				Element lang = it.next();
-				String code = lang.getAttributeValue("code");
-				String description = lang.getText();
-				extendedLanguages.add(new Language(code, description));
-				if ("true".equals(lang.getAttributeValue("bidi"))) {
-					bidiCodes.add(code);
-				}
-			}
-			Collator collator = Collator.getInstance(Locale.getDefault());
-			Collections.sort(extendedLanguages, (l1, l2) -> collator.compare(l1.getDescription(), l2.getDescription()));
-		}
-		return extendedLanguages;
+		Locale locale = Locale.getDefault();
+		LanguageBundle bundle = loadExtendedLanguages(locale);
+		return bundle.languages;
 	}
 
 	public static List<Language> getCommonLanguages() throws SAXException, IOException, ParserConfigurationException {
-		if (languages == null) {
-			languages = new Vector<>();
-			SAXBuilder builder = new SAXBuilder();
-			Locale locale = Locale.getDefault();
-			String language = locale.getLanguage();
-			String resource = "languageList_" + language + ".xml";
-			if (LanguageUtils.class.getResourceAsStream(resource) == null) {
-				resource = "languageList_" + language.substring(0, 2) + ".xml";
-			}
-			if (LanguageUtils.class.getResourceAsStream(resource) == null) {
-				resource = "languageList.xml";
-			}
-			Element root = builder.build(LanguageUtils.class.getResource(resource)).getRootElement();
-			List<Element> children = root.getChildren();
-			Iterator<Element> it = children.iterator();
-			while (it.hasNext()) {
-				Element lang = it.next();
-				String code = lang.getAttributeValue("code");
-				String description = lang.getText();
-				languages.add(new Language(code, description));
-			}
-			Collator collator = Collator.getInstance(Locale.getDefault());
-			Collections.sort(languages, (l1, l2) -> collator.compare(l1.getDescription(), l2.getDescription()));
+		Locale locale = Locale.getDefault();
+		String key = localeKey(locale);
+		List<Language> cached = COMMON_LANGUAGE_CACHE.get(key);
+		if (cached != null) {
+			return cached;
 		}
-		return languages;
+		List<Language> list = new Vector<>();
+		SAXBuilder builder = new SAXBuilder();
+		URL resource = resolveResource("languageList", locale);
+		Element root = builder.build(resource).getRootElement();
+		List<Element> children = root.getChildren();
+		Iterator<Element> it = children.iterator();
+		while (it.hasNext()) {
+			Element lang = it.next();
+			String code = lang.getAttributeValue("code");
+			String description = lang.getText();
+			list.add(new Language(code, description));
+		}
+		Collator collator = Collator.getInstance(locale == null ? Locale.getDefault() : locale);
+		Collections.sort(list, (l1, l2) -> collator.compare(l1.getDescription(), l2.getDescription()));
+		COMMON_LANGUAGE_CACHE.put(key, list);
+		return list;
 	}
 
 	public static Language getLanguage(String code) throws IOException, SAXException, ParserConfigurationException {
@@ -139,10 +112,8 @@ public class LanguageUtils {
 	}
 
 	public static boolean isBiDi(String code) throws SAXException, IOException, ParserConfigurationException {
-		if (bidiCodes == null) {
-			getAllLanguages();
-		}
-		return bidiCodes.contains(code);
+		LanguageBundle bundle = loadExtendedLanguages(Locale.getDefault());
+		return bundle.bidiCodes.contains(code);
 	}
 
 	public static boolean isCJK(String code) {
@@ -158,5 +129,76 @@ public class LanguageUtils {
 			result.add(it.next().getDescription());
 		}
 		return result.toArray(new String[result.size()]);
+	}
+
+	private static URL resolveResource(String baseName, Locale locale) throws IOException {
+		String language = locale == null ? "" : locale.getLanguage();
+		if (language != null && !language.isEmpty()) {
+			String candidate = baseName + "_" + language + ".xml";
+			URL url = LanguageUtils.class.getResource(candidate);
+			if (url != null) {
+				return url;
+			}
+			if (language.length() > 2) {
+				candidate = baseName + "_" + language.substring(0, 2) + ".xml";
+				url = LanguageUtils.class.getResource(candidate);
+				if (url != null) {
+					return url;
+				}
+			}
+		}
+		URL fallback = LanguageUtils.class.getResource(baseName + ".xml");
+		if (fallback != null) {
+			return fallback;
+		}
+		throw new IOException("Language resource not found for " + baseName);
+	}
+
+	private static LanguageBundle loadExtendedLanguages(Locale locale)
+			throws SAXException, IOException, ParserConfigurationException {
+		String key = localeKey(locale);
+		LanguageBundle bundle = EXTENDED_LANGUAGE_CACHE.get(key);
+		if (bundle != null) {
+			return bundle;
+		}
+		List<Language> list = new Vector<>();
+		Set<String> bidi = new TreeSet<>();
+		SAXBuilder builder = new SAXBuilder();
+		URL resource = resolveResource("extendedLanguageList", locale);
+		Element root = builder.build(resource).getRootElement();
+		List<Element> children = root.getChildren();
+		Iterator<Element> it = children.iterator();
+		while (it.hasNext()) {
+			Element lang = it.next();
+			String code = lang.getAttributeValue("code");
+			String description = lang.getText();
+			list.add(new Language(code, description));
+			if ("true".equals(lang.getAttributeValue("bidi"))) {
+				bidi.add(code);
+			}
+		}
+		Collator collator = Collator.getInstance(locale == null ? Locale.getDefault() : locale);
+		Collections.sort(list, (l1, l2) -> collator.compare(l1.getDescription(), l2.getDescription()));
+		bundle = new LanguageBundle(list, bidi);
+		EXTENDED_LANGUAGE_CACHE.put(key, bundle);
+		return bundle;
+	}
+
+	private static String localeKey(Locale locale) {
+		if (locale == null) {
+			return "";
+		}
+		String language = locale.getLanguage();
+		return language == null ? "" : language;
+	}
+
+	private static class LanguageBundle {
+		private final List<Language> languages;
+		private final Set<String> bidiCodes;
+
+		LanguageBundle(List<Language> languages, Set<String> bidiCodes) {
+			this.languages = languages;
+			this.bidiCodes = bidiCodes;
+		}
 	}
 }

@@ -48,5 +48,5 @@ tasks.named('clean') {
     }
 }
 
-// Default task
-defaultTasks 'build'
+// Default tasks – always start with a clean build
+defaultTasks 'clean', 'build'
