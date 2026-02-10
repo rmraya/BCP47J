@@ -32,6 +32,13 @@ public class RegistryParser {
 	private Map<String, Script> scripts;
 	private Map<String, Variant> variants;
 
+	// Private-use ranges
+	private String privateLanguageStart;
+	private String privateLanguageEnd;
+	private String privateScriptStart;
+	private String privateScriptEnd;
+	private String[][] privateRegionRanges;
+
 	private void parseRegistry(URL url) throws IOException {
 		try (InputStream input = url.openStream()) {
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
@@ -53,6 +60,8 @@ public class RegistryParser {
 		regions = new HashMap<>();
 		scripts = new HashMap<>();
 		variants = new HashMap<>();
+		privateRegionRanges = new String[0][];
+		List<String[]> regionRangesList = new ArrayList<>();
 		Iterator<RegistryEntry> it = entries.iterator();
 		while (it.hasNext()) {
 			RegistryEntry entry = it.next();
@@ -63,6 +72,15 @@ public class RegistryParser {
 			if (type.equals("language")) {
 				String description = entry.getDescription();
 				String subtag = entry.getSubtag();
+				if (subtag != null && subtag.contains("..")) {
+					// Private-use range like "qaa..qtz"
+					String[] range = subtag.split("\\.\\.");
+					if (range.length == 2) {
+						privateLanguageStart = range[0].toLowerCase();
+						privateLanguageEnd = range[1].toLowerCase();
+					}
+					continue;
+				}
 				if (subtag != null) {
 					if (description.indexOf('|') != -1) {
 						// trim and use only the first name
@@ -84,6 +102,14 @@ public class RegistryParser {
 			if (type.equals("region")) {
 				String description = entry.getDescription();
 				String subtag = entry.getSubtag();
+				if (subtag != null && subtag.contains("..")) {
+					// Private-use range like "QM..QZ" or "XA..XZ"
+					String[] range = subtag.split("\\.\\.");
+					if (range.length == 2) {
+						regionRangesList.add(new String[] { range[0].toUpperCase(), range[1].toUpperCase() });
+					}
+					continue;
+				}
 				if (subtag != null) {
 					regions.put(subtag, new Region(subtag, description.trim()));
 				}
@@ -93,6 +119,16 @@ public class RegistryParser {
 				description = description.replace('(', '[');
 				description = description.replace(')', ']');
 				String subtag = entry.getSubtag();
+				if (subtag != null && subtag.contains("..")) {
+					// Private-use range like "Qaaa..Qabx"
+					String[] range = subtag.split("\\.\\.");
+					if (range.length == 2) {
+						privateScriptStart = range[0].substring(0, 1).toUpperCase()
+								+ range[0].substring(1).toLowerCase();
+						privateScriptEnd = range[1].substring(0, 1).toUpperCase() + range[1].substring(1).toLowerCase();
+					}
+					continue;
+				}
 				if (subtag != null) {
 					scripts.put(subtag, new Script(subtag, description.trim()));
 				}
@@ -108,6 +144,33 @@ public class RegistryParser {
 				}
 			}
 		}
+		privateRegionRanges = regionRangesList.toArray(new String[0][]);
+	}
+
+	private boolean isPrivateLanguage(String code) {
+		if (privateLanguageStart == null || privateLanguageEnd == null) {
+			return false;
+		}
+		String lowerCode = code.toLowerCase();
+		return lowerCode.compareTo(privateLanguageStart) >= 0 && lowerCode.compareTo(privateLanguageEnd) <= 0;
+	}
+
+	private boolean isPrivateScript(String code) {
+		if (privateScriptStart == null || privateScriptEnd == null) {
+			return false;
+		}
+		String normalizedCode = code.substring(0, 1).toUpperCase() + code.substring(1).toLowerCase();
+		return normalizedCode.compareTo(privateScriptStart) >= 0 && normalizedCode.compareTo(privateScriptEnd) <= 0;
+	}
+
+	private boolean isPrivateRegion(String code) {
+		String upperCode = code.toUpperCase();
+		for (String[] range : privateRegionRanges) {
+			if (upperCode.compareTo(range[0]) >= 0 && upperCode.compareTo(range[1]) <= 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public String getRegistryDate() {
@@ -138,79 +201,106 @@ public class RegistryParser {
 			if (languages.containsKey(tag.toLowerCase())) {
 				return languages.get(tag.toLowerCase()).getDescription();
 			}
+			if (isPrivateLanguage(tag)) {
+				return Messages.getString("RegistryParser.0");
+			}
 		} else if (parts.length == 2) {
 			// contains either script or region
-			if (!languages.containsKey(parts[0].toLowerCase())) {
+			boolean isPrivateLang = isPrivateLanguage(parts[0]);
+			if (!languages.containsKey(parts[0].toLowerCase()) && !isPrivateLang) {
 				return "";
 			}
-			Language lang = languages.get(parts[0].toLowerCase());
-			if (parts[1].length() == 2 && regions.containsKey(parts[1].toUpperCase())) {
+			String langDesc = isPrivateLang ? Messages.getString("RegistryParser.0")
+					: languages.get(parts[0].toLowerCase()).getDescription();
+			Language lang = isPrivateLang ? null : languages.get(parts[0].toLowerCase());
+			if (parts[1].length() == 2 && (regions.containsKey(parts[1].toUpperCase()) || isPrivateRegion(parts[1]))) {
 				// could be a country code
-				return lang.getDescription() + " (" + regions.get(parts[1].toUpperCase()).getDescription() + ")";
+				String regionDesc = isPrivateRegion(parts[1]) ? Messages.getString("RegistryParser.0")
+						: regions.get(parts[1].toUpperCase()).getDescription();
+				return langDesc + " (" + regionDesc + ")";
 			}
 			if (parts[1].length() == 3 && regions.containsKey(parts[1])) {
 				// could be a UN region code
 				Region reg = regions.get(parts[1]);
-				return lang.getDescription() + " (" + reg.getDescription() + ")";
+				return langDesc + " (" + reg.getDescription() + ")";
 			}
 			if (parts[1].length() == 4) {
 				// could have script
 				String script = parts[1].substring(0, 1).toUpperCase() + parts[1].substring(1).toLowerCase();
-				if (script.equals(lang.getSuppresedScript())) {
+				if (lang != null && script.equals(lang.getSuppresedScript())) {
 					return "";
 				}
 				if (scripts.containsKey(script)) {
-					return lang.getDescription() + " (" + scripts.get(script).getDescription() + ")";
+					return langDesc + " (" + scripts.get(script).getDescription() + ")";
+				}
+				if (isPrivateScript(script)) {
+					return langDesc + " (" + Messages.getString("RegistryParser.0") + ")";
 				}
 			}
 			// try with a variant
-			if (variants.containsKey(parts[1].toLowerCase())) {
+			if (!isPrivateLang && variants.containsKey(parts[1].toLowerCase())) {
 				Variant variant = variants.get(parts[1].toLowerCase());
 				if (variant != null && variant.getPrefix().equals(parts[0].toLowerCase())) {
 					// variant is valid for the language code
-					return lang.getDescription() + " (" + variant.getDescription() + ")";
+					return langDesc + " (" + variant.getDescription() + ")";
 				}
 			}
+			if (isPrivateLang) {
+				return Messages.getString("RegistryParser.0");
+			}
 		} else if (parts.length == 3) {
-			if (!languages.containsKey(parts[0].toLowerCase())) {
+			boolean isPrivateLang = isPrivateLanguage(parts[0]);
+			if (!languages.containsKey(parts[0].toLowerCase()) && !isPrivateLang) {
 				return "";
 			}
-			Language lang = languages.get(parts[0].toLowerCase());
+			String langDesc = isPrivateLang ? Messages.getString("RegistryParser.0")
+					: languages.get(parts[0].toLowerCase()).getDescription();
+			Language lang = isPrivateLang ? null : languages.get(parts[0].toLowerCase());
 			if (parts[1].length() == 4) {
 				// could be script + region or variant
 				String script = parts[1].substring(0, 1).toUpperCase() + parts[1].substring(1).toLowerCase();
-				if (script.equals(lang.getSuppresedScript())) {
+				if (lang != null && script.equals(lang.getSuppresedScript())) {
 					return "";
 				}
-				if (scripts.containsKey(script)) {
-					Script scr = scripts.get(script);
+				boolean isPrivateScr = isPrivateScript(script);
+				if (scripts.containsKey(script) || isPrivateScr) {
+					String scrDesc = isPrivateScr ? Messages.getString("RegistryParser.0")
+							: scripts.get(script).getDescription();
 					// check if next part is a region or variant
-					if (regions.containsKey(parts[2].toUpperCase())) {
-						// check if next part is a variant
-						Region reg = regions.get(parts[2].toUpperCase());
-						return lang.getDescription() + " (" + scr.getDescription() + ", " + reg.getDescription() + ")";
+					boolean isPrivateReg = isPrivateRegion(parts[2]);
+					if (regions.containsKey(parts[2].toUpperCase()) || isPrivateReg) {
+						String regDesc = isPrivateReg ? Messages.getString("RegistryParser.0")
+								: regions.get(parts[2].toUpperCase()).getDescription();
+						return langDesc + " (" + scrDesc + ", " + regDesc + ")";
 					}
-					if (variants.containsKey(parts[2].toLowerCase())) {
+					if (!isPrivateLang && variants.containsKey(parts[2].toLowerCase())) {
 						Variant variant = variants.get(parts[2].toLowerCase());
 						if (variant != null && variant.getPrefix().equals(parts[0].toLowerCase())) {
 							// variant is valid for the language code
-							return lang.getDescription() + " (" + scr.getDescription() + ", " + variant.getDescription()
+							return langDesc + " (" + scrDesc + ", " + variant.getDescription()
 									+ ")";
 						}
 					}
 				}
 			} else {
 				// could be region + variant
-				if ((parts[1].length() == 2 || parts[1].length() == 3) && regions.containsKey(parts[1].toUpperCase())) {
+				boolean isPrivateReg = isPrivateRegion(parts[1]);
+				if ((parts[1].length() == 2 || parts[1].length() == 3)
+						&& (regions.containsKey(parts[1].toUpperCase()) || isPrivateReg)) {
 					// could be a region code, check if next part is a variant
-					Region reg = regions.get(parts[1].toUpperCase());
-					if (variants.containsKey(parts[2].toLowerCase())) {
+					String regDesc = isPrivateReg ? Messages.getString("RegistryParser.0")
+							: regions.get(parts[1].toUpperCase()).getDescription();
+					if (!isPrivateLang && variants.containsKey(parts[2].toLowerCase())) {
 						Variant variant = variants.get(parts[2].toLowerCase());
 						if (variant != null && variant.getPrefix().equals(parts[0].toLowerCase())) {
 							// variant is valid for the language code
-							return lang.getDescription() + " (" + reg.getDescription() + " - "
+							return langDesc + " (" + regDesc + " - "
 									+ variant.getDescription() + ")";
 						}
+					}
+					// For private-use languages with regions, return description
+					if (isPrivateLang) {
+						return langDesc + " (" + regDesc + ")";
 					}
 				}
 			}
@@ -225,13 +315,17 @@ public class RegistryParser {
 			if (languages.containsKey(code.toLowerCase())) {
 				return code.toLowerCase();
 			}
+			if (isPrivateLanguage(code)) {
+				return code.toLowerCase();
+			}
 		} else if (parts.length == 2) {
 			// contains either script or region
-			if (!languages.containsKey(parts[0].toLowerCase())) {
+			boolean isPrivateLang = isPrivateLanguage(parts[0]);
+			if (!languages.containsKey(parts[0].toLowerCase()) && !isPrivateLang) {
 				return "";
 			}
-			Language lang = languages.get(parts[0].toLowerCase());
-			if (parts[1].length() == 2 && regions.containsKey(parts[1].toUpperCase())) {
+			Language lang = isPrivateLang ? null : languages.get(parts[0].toLowerCase());
+			if (parts[1].length() == 2 && (regions.containsKey(parts[1].toUpperCase()) || isPrivateRegion(parts[1]))) {
 				// could be a country code
 				return parts[0].toLowerCase() + "-" + parts[1].toUpperCase();
 			}
@@ -242,15 +336,15 @@ public class RegistryParser {
 			if (parts[1].length() == 4) {
 				// could have script
 				String script = parts[1].substring(0, 1).toUpperCase() + parts[1].substring(1).toLowerCase();
-				if (script.equals(lang.getSuppresedScript())) {
+				if (lang != null && script.equals(lang.getSuppresedScript())) {
 					return "";
 				}
-				if (scripts.containsKey(script)) {
+				if (scripts.containsKey(script) || isPrivateScript(script)) {
 					return parts[0].toLowerCase() + "-" + script;
 				}
 			}
 			// try with a variant
-			if (variants.containsKey(parts[1].toLowerCase())) {
+			if (!isPrivateLang && variants.containsKey(parts[1].toLowerCase())) {
 				Variant variant = variants.get(parts[1].toLowerCase());
 				if (variant != null && variant.getPrefix().equals(parts[0].toLowerCase())) {
 					// variant is valid for the language code
@@ -258,43 +352,53 @@ public class RegistryParser {
 				}
 			}
 		} else if (parts.length == 3) {
-			if (!languages.containsKey(parts[0].toLowerCase())) {
+			boolean isPrivateLang = isPrivateLanguage(parts[0]);
+			if (!languages.containsKey(parts[0].toLowerCase()) && !isPrivateLang) {
 				return "";
 			}
-			Language lang = languages.get(parts[0].toLowerCase());
+			Language lang = isPrivateLang ? null : languages.get(parts[0].toLowerCase());
 			if (parts[1].length() == 4) {
 				// could be script + region or variant
 				String script = parts[1].substring(0, 1).toUpperCase() + parts[1].substring(1).toLowerCase();
-				if (script.equals(lang.getSuppresedScript())) {
+				if (lang != null && script.equals(lang.getSuppresedScript())) {
 					return "";
 				}
-				if (scripts.containsKey(script)) {
-					Script scr = scripts.get(script);
+				boolean isPrivateScr = isPrivateScript(script);
+				if (scripts.containsKey(script) || isPrivateScr) {
+					String scrCode = isPrivateScr ? script : scripts.get(script).getCode();
 					// check if next part is a region or variant
-					if (regions.containsKey(parts[2].toUpperCase())) {
-						// check if next part is a variant
-						Region reg = regions.get(parts[2].toUpperCase());
-						return lang.getCode() + "-" + scr.getCode() + "-" + reg.getCode();
+					boolean isPrivateReg = isPrivateRegion(parts[2]);
+					if (regions.containsKey(parts[2].toUpperCase()) || isPrivateReg) {
+						String regCode = isPrivateReg ? parts[2].toUpperCase()
+								: regions.get(parts[2].toUpperCase()).getCode();
+						return parts[0].toLowerCase() + "-" + scrCode + "-" + regCode;
 					}
-					if (variants.containsKey(parts[2].toLowerCase())) {
+					if (!isPrivateLang && variants.containsKey(parts[2].toLowerCase())) {
 						Variant variant = variants.get(parts[2].toLowerCase());
 						if (variant != null && variant.getPrefix().equals(parts[0].toLowerCase())) {
 							// variant is valid for the language code
-							return lang.getCode() + "-" + scr.getCode() + "-" + variant.getCode();
+							return parts[0].toLowerCase() + "-" + scrCode + "-" + variant.getCode();
 						}
 					}
 				}
 			} else {
 				// could be region + variant
-				if ((parts[1].length() == 2 || parts[1].length() == 3) && regions.containsKey(parts[1].toUpperCase())) {
+				boolean isPrivateReg = isPrivateRegion(parts[1]);
+				if ((parts[1].length() == 2 || parts[1].length() == 3)
+						&& (regions.containsKey(parts[1].toUpperCase()) || isPrivateReg)) {
 					// could be a region code, check if next part is a variant
-					Region reg = regions.get(parts[1].toUpperCase());
-					if (variants.containsKey(parts[2].toLowerCase())) {
+					String regCode = isPrivateReg ? parts[1].toUpperCase()
+							: regions.get(parts[1].toUpperCase()).getCode();
+					if (!isPrivateLang && variants.containsKey(parts[2].toLowerCase())) {
 						Variant variant = variants.get(parts[2].toLowerCase());
 						if (variant != null && variant.getPrefix().equals(parts[0].toLowerCase())) {
 							// variant is valid for the language code
-							return lang.getCode() + "-" + reg.getCode() + "-" + variant.getCode();
+							return parts[0].toLowerCase() + "-" + regCode + "-" + variant.getCode();
 						}
+					}
+					// For private-use languages with regions, return normalized code
+					if (isPrivateLang) {
+						return parts[0].toLowerCase() + "-" + regCode;
 					}
 				}
 			}
