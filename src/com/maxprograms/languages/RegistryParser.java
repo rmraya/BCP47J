@@ -62,9 +62,6 @@ public class RegistryParser {
 			}
 			if (type.equals("language")) {
 				String description = entry.getDescription();
-				if (description.indexOf("Private use") != -1) {
-					continue;
-				}
 				String subtag = entry.getSubtag();
 				if (subtag != null) {
 					if (description.indexOf('|') != -1) {
@@ -86,9 +83,6 @@ public class RegistryParser {
 			}
 			if (type.equals("region")) {
 				String description = entry.getDescription();
-				if (description.indexOf("Private use") != -1) {
-					continue;
-				}
 				String subtag = entry.getSubtag();
 				if (subtag != null) {
 					regions.put(subtag, new Region(subtag, description.trim()));
@@ -96,9 +90,6 @@ public class RegistryParser {
 			}
 			if (type.equals("script")) {
 				String description = entry.getDescription();
-				if (description.indexOf("Private use") != -1) {
-					continue;
-				}
 				description = description.replace('(', '[');
 				description = description.replace(')', ']');
 				String subtag = entry.getSubtag();
@@ -108,9 +99,6 @@ public class RegistryParser {
 			}
 			if (type.equals("variant")) {
 				String description = entry.getDescription();
-				if (description.indexOf("Private use") != -1) {
-					continue;
-				}
 				description = description.replace('(', '[');
 				description = description.replace(')', ']');
 				String subtag = entry.getSubtag();
