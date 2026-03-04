@@ -32,8 +32,6 @@ String[] names = LanguageUtils.getLanguageNames();
 
 ```
 
-* Note: localizations are based on [cldr-json](https://github.com/unicode-org/cldr-json) project.
-
 Contact <tech@maxprograms.com> to localize the names to other languages.
 
 ### Example
@@ -63,3 +61,12 @@ git clone https://github.com/rmraya/BCP47J.git
 cd BCP47J
 gradle
 ```
+
+## License
+
+This software is source-available and proprietary.  
+You may view and modify the source code for personal, educational, or internal evaluation purposes.
+
+Redistribution, commercial use, or distribution of modified versions is prohibited without prior written permission from Maxprograms.
+
+See the `LICENSE.md` file for full terms.
